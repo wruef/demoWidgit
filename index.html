@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            table {
+                border-collapse: collapse;
+                border: 2px black solid;
+                font: 12px sans-serif;
+            }
+
+            td {
+                border: 1px black solid;
+                padding: 5px;
+            }
+        </style>
+    </head>
+    <body onload="callback_filter();">
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+
+        <script type="text/javascript"charset="utf-8">
+            function clear_filter(){
+              document.getElementById('tag1select').selectedIndex = 0;
+              document.getElementById('tag2select').selectedIndex = 0;
+              callback_filter();
+            }
+
+            function callback_filter() {
+              var table = d3.select('#target_filter').selectAll("table");
+              if ( table )
+		table.remove();
+              var tag1 = document.getElementById('tag1select').value
+              var tag2 = document.getElementById('tag2select').value
+              var term = tag1 + "_" + tag2;
+              if ( tag1 == "unselected" && tag2 == "unselected" )
+                term = "unfiltered";
+              console.log("search term = " + term);
+
+              d3.text("data.csv", function(data) {
+                var parsedCSV = d3.csv.parseRows(data);
+
+                var subset = parsedCSV;
+                if ( term != "unfiltered" )
+                   subset = parsedCSV.filter(function(d) { return d[0] === term } );
+
+                var container = d3.select("#target_filter")
+                    .append("table")
+
+                    .selectAll("tr")
+                        .data(subset).enter()
+                        .append("tr")
+
+                    .selectAll("td")
+                        .data(function(d) { return d; }).enter()
+                        .append("td")
+                        .text(function(d) { return d; });
+            });
+              
+            }
+
+        </script>
+
+
+<form>
+  <select id=tag1select onchange="callback_filter();">
+    <option value="unselected">Select One</option>
+    <option value="HappyPlace">Happy Place</option>
+    <option value="DeepSpace9">Deep Space 9</option>
+    <option value="UnderPressure">Under Pressure</option>
+  </select>
+  <select id=tag2select onchange="callback_filter();">
+    <option value="unselected">Select One</option>
+    <option value="Widget">Widget</option>
+    <option value="ExpensiveWidget">Expensive Widget</option>
+    <option value="HighFrequencyWidget">High Frequency Widget</option>
+  </select>
+  <input type="reset" value="Clear" onclick="clear_filter()">  
+</form>
+<div id="target_filter"></div>
+
+    </body>
+</html>
+
+
