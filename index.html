@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <style>
+		table {
+		  border: 1px solid #1C6EA4;
+		  background-color: #EEEEEE;
+		  text-align: left;
+		  border-collapse: collapse;
+		}
+		table td, table th {
+		  border: 1px solid #AAAAAA;
+		  padding: 3px 2px;
+		}
+		table tbody td {
+		  font-size: 13px;
+		}
+		table tr:nth-child(even) {
+		  background: #D0E4F5;
+		}
+		table thead {
+		  background: #1C6EA4;
+		  background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		  background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		  background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		  border-bottom: 2px solid #444444;
+		}
+		table thead th {
+		  font-size: 15px;
+		  font-weight: bold;
+		  color: #FFFFFF;
+		  border-left: 2px solid #D0E4F5;
+		}
+		table thead th:first-child {
+		  border-left: none;
+		}
+
+		table tfoot td {
+		  font-size: 14px;
+		}
+		table tfoot .links {
+		  text-align: right;
+		}
+		table tfoot .links a{
+		  display: inline-block;
+		  background: #1C6EA4;
+		  color: #FFFFFF;
+		  padding: 2px 8px;
+		  border-radius: 5px;
+		}
+        </style>
+    </head>
+    <body onload="callback_filter();">
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+
+        <script type="text/javascript"charset="utf-8">
+            function clear_filter(){
+              document.getElementById('tag1select').selectedIndex = 0;
+              document.getElementById('tag2select').selectedIndex = 0;
+              callback_filter();
+            }
+
+            function callback_filter() {
+              var table = d3.select('#target_filter').selectAll("table");
+              if ( table )
+		table.remove();
+
+              var tag1 = document.getElementById('tag1select').value
+              var tag2 = document.getElementById('tag2select').value
+              var tag3 = document.getElementById('tag3select').value
+              var downloadDate = document.getElementById('downloadDate').value
+              console.log("tag1 = " + tag1);
+              console.log("tag2 = " + tag2);
+              console.log("tag3 = " + tag3);
+              console.log("downloadDate = " + downloadDate);
+
+              // Change this to github
+              d3.text("https://raw.githubusercontent.com/wruef/demoWidgit/master/test.csv", function(data) {
+                // Parse data from CSV into a javascript array of arrays
+                var parsedCSV = d3.csv.parseRows(data);
+                console.log("parsedCSV = ");
+                console.log(parsedCSV);
+
+                // Apply filters
+                //   Using drop-down boxes to filter on the first 4 columns
+                var subset = parsedCSV.filter(function(d) { return (d[0] === tag1 &&
+                                                                    d[1] === tag2 &&
+                                                                    d[3] === tag3 &&
+                                                                    d[8].split(' ')[0] > downloadDate) } );
+                    console.log("subset after filter = ");
+                    console.log(subset);
+                    // I want only specific columns in the output
+                    subset = subset.map(function(value,index) { return [value[4], value[8], value[15]] });
+                    console.log("subset after slice = ");
+                    console.log(subset);
+                    // And these columns will have these headers in the table
+                    var headers = [ "Reference Designator", "Date of Metadata Change", "Annotation" ];
+
+                    if ( subset.length == 0 ) {
+                      // We have no results...don't display anything
+                    }else {
+                      // We have a result(s), display the table
+                      var tbl = d3.select("#target_filter").append("table");
+                      // headers
+                      tbl.append("thead").append("tr")
+                         .selectAll("th")
+                         .data(headers)
+                         .enter().append("th")
+                         .text(function(d) { return d; });
+  
+                      // data
+                      tbl.append("tbody")
+                              .selectAll("tr")
+                              .data(subset).enter()
+                              .append("tr")
+                              .selectAll("td")
+                              .data(function(d) { return d; }).enter()
+                              .append("td")
+                              .text(function(d) { return d; });
+                    }
+              });
+            } 
+
+        </script>
+
+        <!-- HTML Content -->
+        <h2>Metadata Changes Search</h2>
+        <form>
+          Original Download Date:
+          <input id="downloadDate" onchange="callback_filter(); "type="date" value="2014-01-01">
+          <select id=tag1select onchange="callback_filter();">
+            <option selected hidden value="unselected">Choose an Array</option>
+            <option value="Cabled Axial Seamount">Cabled Axial Seamount</option>
+            <option value="Cabled Continental Margin">Cabled Continental Margin</option>
+            <option value="Coastal Endurance">Coastal Endurance</option>
+          </select>
+          <select id=tag2select onchange="callback_filter();">
+            <option selected hidden value="unselected">Choose a Platform</option>
+            <option value="ASHES Vent Field">ASHES Vent Field</option>
+            <option value="Axial Base Deep Profiler Mooring">Axial Base Deep Profiler Mooring</option>
+            <option value="Axial Base Seafloor">Axial Base Seafloor</option>
+            <option value="Axial Base Shallow Profiler Mooring">Axial Base Shallow Profiler Mooring</option>
+            <option value="International District Vent Field 1">International District Vent Field 1"</option> 
+            <option value="Oregon Slope Base Deep Profiler Mooring">Oregon Slope Base Deep Profiler Mooring</option>
+            <option value="Oregon Slope Base Seafloor">Oregon Slope Base Seafloor</option>
+            <option value="Oregon Slope Base Shallow Profiler Mooring">Oregon Slope Base Shallow Profiler Mooring</option>
+            <option value="Oregon Inshore Surface Mooring">Oregon Inshore Surface Mooring</option>
+            <option value="Oregon Offshore Cabled Benthic Experiment Package">Oregon Offshore Cabled Benthic Experiment Package</option>
+            <option value="Oregon Offshore Cabled Deep Profiler Mooring">Oregon Offshore Cabled Deep Profiler Mooring</option>
+            <option value="Oregon Offshore Cabled Shallow Profiler Mooring">Oregon Offshore Cabled Shallow Profiler Mooring</option>
+            <option value="Oregon Shelf Cabled Benthic Experiment Package">Oregon Shelf Cabled Benthic Experiment Package</option>
+          </select>
+          <select id=tag3select onchange="callback_filter();">
+            <option selected hidden value="unselected">Choose an Instrument</option>
+            <option value="2-Wavelength Fluorometer">2-Wavelength Fluorometer</option>
+            <option value="3-D Single Point Velocity Meter">3-D Single Point Velocity Meter</option>
+            <option value="3-Wavelength Fluorometer">3-Wavelength Fluorometer</option>
+            <option value="Bio-acoustic Sonar (Coastal)">Bio-acoustic Sonar (Coastal)</option>
+            <option value="CDOM Fluorometer">CDOM Fluorometer</option>
+            <option value="CTD">CTD</option>
+            <option value="Diffuse Vent Fluid 3-D Temperature Array">Diffuse Vent Fluid 3-D Temperature Array</option>
+            <option value="Dissolved Oxygen">Dissolved Oxygen</option>
+            <option value="Hydrothermal Vent Fluid In-situ Chemistry">Hydrothermal Vent Fluid In-situ Chemistry</option>
+            <option value="Hydrothermal Vent Fluid Temperature and Resistivity">Hydrothermal Vent Fluid Temperature and Resistivity</option>
+            <option value="Nitrate">Nitrate</option>
+            <option value="pCO2 Water">pCO2 Water</option>
+            <option value="Photosynthetically Available Radiation">Photosynthetically Available Radiation</option>
+            <option value="Seawater pH">Seawater pH</option>
+            <option value="Spectral Irradiance">Spectral Irradiance</option>
+            <option value="Spectrophotometer">Spectrophotometer</option>
+          </select>
+          <input type="reset" value="Clear" onclick="clear_filter()">  
+        </form>
+        <p>
+        <div id="target_filter"></div>
+    </body>
+</html>
+
+
